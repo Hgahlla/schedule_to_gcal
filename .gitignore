@@ -1,0 +1,6 @@
+*.pyc
+secret.py
+client_secret.json
+token.json
+token_calendar_v3.pickle
+/tests
