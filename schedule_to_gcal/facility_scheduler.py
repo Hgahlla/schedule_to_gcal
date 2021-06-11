@@ -25,60 +25,25 @@ def get_schedule():
         res = s.get(schedule_url)
         soup = BeautifulSoup(res.text, 'html.parser')
 
-        date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
+        #date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
         #print(date.text)
 
         table = soup.find('table', {'id': 'scheduleTable'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
 
-        shift_dates = []
+        shifts = []
 
         for row in rows:
             table_data = row.find_all('input')
 
             for day in table_data:
                 cancel = day.get('data-canceldescription')
-                shift = day.get('value')
+                shift_type = day.get('value')
                 date = day.get('data-date')
 
                 if not cancel:
-                    if shift == 'P' or shift == 'SP':
-                        print(date, shift)
-                        shift_dates.append(date)
+                    if shift_type == 'P' or shift_type == 'SP':
+                        shifts.append((date, shift_type))
 
-        return shift_dates
-
-def get_canceled_shifts():
-    file = "C:\\Users\\HGahlla\\OneDrive\\software\\Python\\Projects\\ScheduleToGCal\\tests\\schedule.html"
-    soup = BeautifulSoup(open(file), 'html.parser')
-    
-    date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
-    #print(date.text)
-
-    table = soup.find('table', {'id': 'scheduleTable'})
-    table_body = table.find('tbody')
-    rows = table_body.find_all('tr')
-
-    shift_dates = []
-    count = 0
-    for row in rows:
-        table_data = row.find_all('input')
-
-        for day in table_data:
-            cancel = day.get('data-canceldescription')
-            shift = day.get('value')
-            date = day.get('data-date')
-            
-            if not cancel:
-                if shift == 'P' or shift == 'SP':
-                    print(date, shift)
-                    shift_dates.append(date)
-
-
-    return shift_dates
-
-
-if __name__ == '__main__':
-    res = get_schedule()
-    print(res)
+        return shifts
