@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+from gcal_setup import convert_str_to_datetime
+from gcal_setup import add_time
 import secret
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36'}
@@ -25,14 +27,14 @@ def get_schedule():
         res = s.get(schedule_url)
         soup = BeautifulSoup(res.text, 'html.parser')
 
-        #date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
-        #print(date.text)
+        # date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
+        # print(date.text)
 
         table = soup.find('table', {'id': 'scheduleTable'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
 
-        shifts = []
+        shifts = {}
 
         for row in rows:
             table_data = row.find_all('input')
@@ -44,6 +46,8 @@ def get_schedule():
 
                 if not cancel:
                     if shift_type == 'P' or shift_type == 'SP':
-                        shifts.append((date, shift_type))
+                        dt = convert_str_to_datetime(date) + add_time(19)
+                        iso_dt = dt.isoformat()
+                        shifts[iso_dt] = [dt, shift_type]
 
         return shifts
