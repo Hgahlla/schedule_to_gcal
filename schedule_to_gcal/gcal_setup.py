@@ -46,7 +46,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-def convert_str_to_local_datetime(date):
+def convert_str_to_datetime(date):
     dt = datetime.datetime.strptime(date, '%Y-%m-%d')
     local_tz = pytz.timezone('America/Chicago')
     local_dt = dt.astimezone(local_tz)
