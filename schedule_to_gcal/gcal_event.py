@@ -1,5 +1,4 @@
-from gcal_setup import Create_Service
-from pprint import pprint
+from gcal_setup import create_service
 import secret
 import datetime
 import pytz
@@ -9,7 +8,7 @@ API_NAME = 'calendar'
 API_VERSION = 'v3'
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-service = Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
+service = create_service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
 calendar_id = secret.calendar_id
 
 
@@ -29,35 +28,35 @@ def create_event(start_time, end_time, summary, desc, location):
         'location': location,
     }
 
-    # Call the Calendar API
+    # Call the Calendar API: Creates an event.
     response = service.events().insert(calendarId=calendar_id, body=event_request_body).execute()
-    pprint(response)
 
-# Checks if an event at a given start time already exists and removes it from the dictionary
-def check_event_exists(shifts):
+    print("Event Created in", response['organizer']['displayName'])
+    print("Title:", response['summary'])
+    print("Start Time:", response['start']['dateTime'])
+    print("End Time:", response['end']['dateTime'], "\n")
+
+
+# Returns events on the specified calendar
+def get_events():
     page_token = None
-    event_times = set()
+    events = {}
     while True:
-        # Call the Calendar API
-        events = service.events().list(calendarId=calendar_id, pageToken=page_token, orderBy='startTime', singleEvents=True).execute()
-        for event in events['items']:
-            event_times.add(event['start']['dateTime'])
+        # Call the Calendar API: Returns events on the specified calendar.
+        event_list = service.events().list(calendarId=calendar_id, pageToken=page_token, orderBy='startTime', singleEvents=True).execute()
+        for event in event_list['items']:
+            start_time = event['start']['dateTime']
+            events[start_time] = event['id']
 
-        page_token = events.get('nextPageToken')
+        page_token = event_list.get('nextPageToken')
         if not page_token:
             break
 
-    # The intersection of the schedule dates and the event dates
-    duplicates = shifts.keys() & event_times
+    return events
 
-    # Deletes the events that already exist on the calendar from the dictionary
-    for k in duplicates:
-        del shifts[k]
 
-    return shifts
-
-    # # The intersection of the schedule dates and the event dates
-    # print(list(set(start_times) & set(event_times)))
-    #
-    # # Symmetric Difference, the equivalent of the union of both sets minus the intersection of both sets
-    # print(list(set(start_times) ^ set(event_times)))
+# Deletes an event
+def delete_event(event_id):
+    # Call the Calendar API: Deletes an event.
+    service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+    print("The Event (" + str(event_id) + ") Was Successfully Deleted")
