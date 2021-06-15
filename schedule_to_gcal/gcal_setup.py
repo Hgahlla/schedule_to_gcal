@@ -6,8 +6,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
-def Create_Service(client_secret_file, api_name, api_version, *scopes):
-    print(client_secret_file, api_name, api_version, scopes, sep='-')
+
+# Creates the Google Calendar Service
+def create_service(client_secret_file, api_name, api_version, *scopes):
     CLIENT_SECRET_FILE = client_secret_file
     API_SERVICE_NAME = api_name
     API_VERSION = api_version
@@ -33,15 +34,15 @@ def Create_Service(client_secret_file, api_name, api_version, *scopes):
             token.write(creds.to_json())
 
     try:
+        # Google Calendar Service is Created Successfully
         service = build(API_SERVICE_NAME, API_VERSION, credentials=creds)
-        print(API_SERVICE_NAME, 'service created successfully')
         return service
     except Exception as e:
         print(e)
         return None
 
 
-def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
+def convert_to_rfc_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     dt = datetime.datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
     return dt
 
