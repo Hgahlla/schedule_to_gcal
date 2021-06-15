@@ -44,10 +44,11 @@ def get_schedule():
                 shift_type = day.get('value')
                 date = day.get('data-date')
 
-                if not cancel:
-                    if shift_type == 'P' or shift_type == 'SP':
-                        dt = convert_str_to_datetime(date) + add_time(19)
-                        iso_dt = dt.isoformat()
-                        shifts[iso_dt] = [dt, shift_type]
-
+                if shift_type == 'P' or shift_type == 'SP':
+                    dt = convert_str_to_datetime(date) + add_time(19)
+                    iso_dt = dt.isoformat()
+                    if not cancel:
+                        shifts[iso_dt] = [dt, shift_type, False]
+                    else:
+                        shifts[iso_dt] = [dt, shift_type, True]
         return shifts
