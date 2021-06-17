@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import datetime
 from gcal_setup import convert_str_to_datetime
 from gcal_setup import add_time
 import secret
@@ -18,37 +19,55 @@ payload = {
 }
 
 login_url = "https://northtexas.fs.app.medcity.net/Login.aspx"
-schedule_url = secret.schedule_url
 
 
 def get_schedule():
-    with requests.session() as s:
-        s.post(login_url, headers=headers, data=payload)
-        res = s.get(schedule_url)
-        soup = BeautifulSoup(res.text, 'html.parser')
+    s = requests.session()
+    s.post(login_url, headers=headers, data=payload)
 
-        # date = soup.find('span', {'id': 'ctl00_Body_lblDates'})
-        # print(date.text)
+    # Current Month of Shifts
+    sch_url = f"https://northtexas.fs.app.medcity.net/Schedule/EmployeeScheduleBrowse.aspx?FacilityId={secret.fac_id}&DepartmentId={secret.depart_id}&EmployeeId={secret.emp_id}"
+    default_page = s.get(sch_url)
+    def_soup = BeautifulSoup(default_page.text, 'html.parser')
 
-        table = soup.find('table', {'id': 'scheduleTable'})
-        table_body = table.find('tbody')
-        rows = table_body.find_all('tr')
+    shifts = scrape_schedule(def_soup, shifts={})
 
-        shifts = {}
+    # Next Month of Shifts
+    start_date = get_start_date(def_soup)
+    next_sch_url = sch_url + f"&startDate={start_date.month}%2f{start_date.day}%2f{start_date.year}"
+    next_page = s.get(next_sch_url)
+    next_soup = BeautifulSoup(next_page.text, 'html.parser')
 
-        for row in rows:
-            table_data = row.find_all('input')
+    shifts = scrape_schedule(next_soup, shifts)
 
-            for day in table_data:
-                cancel = day.get('data-canceldescription')
-                shift_type = day.get('value')
-                date = day.get('data-date')
+    return shifts
 
-                if shift_type == 'P' or shift_type == 'SP':
-                    dt = convert_str_to_datetime(date) + add_time(19)
-                    iso_dt = dt.isoformat()
-                    if not cancel:
-                        shifts[iso_dt] = [dt, shift_type, False]
-                    else:
-                        shifts[iso_dt] = [dt, shift_type, True]
-        return shifts
+
+def scrape_schedule(soup, shifts):
+    table = soup.find('table', {'id': 'scheduleTable'})
+    table_body = table.find('tbody')
+    rows = table_body.find_all('tr')
+
+    for row in rows:
+        table_data = row.find_all('input')
+
+        for day in table_data:
+            cancel = day.get('data-canceldescription')
+            shift_type = day.get('value')
+            date = day.get('data-date')
+
+            if shift_type == 'P' or shift_type == 'SP':
+                dt = convert_str_to_datetime(date) + add_time(19)
+                iso_dt = dt.isoformat()
+                if not cancel:
+                    shifts[iso_dt] = [dt, shift_type, False]
+                else:
+                    shifts[iso_dt] = [dt, shift_type, True]
+    return shifts
+
+
+def get_start_date(soup):
+    dates = soup.find('span', {'id': 'ctl00_Body_lblDates'}).get_text()
+    end_date = dates.split()[2]
+    start_date = datetime.datetime.strptime(end_date, '%m/%d/%Y') + datetime.timedelta(days=1)
+    return start_date
