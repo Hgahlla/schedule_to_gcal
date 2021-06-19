@@ -1,7 +1,9 @@
 from gcal_setup import create_service
-import secret
+from os import environ
 import datetime
 import pytz
+# from dotenv import load_dotenv
+# load_dotenv()
 
 CLIENT_SECRET_FILE = "client_secret.json"
 API_NAME = 'calendar'
@@ -9,7 +11,7 @@ API_VERSION = 'v3'
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 service = create_service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
-calendar_id = secret.calendar_id
+calendar_id = environ.get('CALENDAR_ID')
 
 
 # Create an event

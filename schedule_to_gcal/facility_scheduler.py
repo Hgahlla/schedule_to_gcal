@@ -3,30 +3,31 @@ from bs4 import BeautifulSoup
 import datetime
 from gcal_setup import convert_str_to_datetime
 from gcal_setup import add_time
-import secret
+from os import environ
+# from dotenv import load_dotenv
+# load_dotenv()
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36'}
 
 payload = {
-    '__VIEWSTATE': secret.viewstate,
-    '__VIEWSTATEGENERATOR': secret.viewstategenerator,
-    '__EVENTVALIDATION': secret.eventvalidation,
-    'ctl00$ContextMenu$hdnIsAliveToken': secret.token,
-    'ctl00$Body$txtUsername': secret.username,
-    'ctl00$Body$txtPassword': secret.password,
-    'ctl00$Body$txtDomain': secret.domain,
+    '__VIEWSTATE': environ.get('VIEWSTATE'),
+    '__VIEWSTATEGENERATOR': environ.get('VIEWSTATEGENERATOR'),
+    '__EVENTVALIDATION': environ.get('EVENTVALIDATION'),
+    'ctl00$ContextMenu$hdnIsAliveToken': environ.get('TOKEN'),
+    'ctl00$Body$txtUsername': environ.get('UNAME'),
+    'ctl00$Body$txtPassword': environ.get('PASSWORD'),
+    'ctl00$Body$txtDomain': environ.get('DOMAIN'),
     'ctl00$Body$btnSubmit': 'Login'
 }
 
 login_url = "https://northtexas.fs.app.medcity.net/Login.aspx"
-
 
 def get_schedule():
     s = requests.session()
     s.post(login_url, headers=headers, data=payload)
 
     # Current Month of Shifts
-    sch_url = f"https://northtexas.fs.app.medcity.net/Schedule/EmployeeScheduleBrowse.aspx?FacilityId={secret.fac_id}&DepartmentId={secret.depart_id}&EmployeeId={secret.emp_id}"
+    sch_url = f"https://northtexas.fs.app.medcity.net/Schedule/EmployeeScheduleBrowse.aspx?FacilityId={environ.get('FAC_ID')}&DepartmentId={environ.get('DEPART_ID')}&EmployeeId={environ.get('EMP_ID')}"
     default_page = s.get(sch_url)
     def_soup = BeautifulSoup(default_page.text, 'html.parser')
 

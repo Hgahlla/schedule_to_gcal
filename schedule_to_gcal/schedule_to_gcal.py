@@ -3,8 +3,9 @@ from gcal_setup import add_time
 from gcal_event import create_event
 from gcal_event import get_events
 from gcal_event import delete_event
-import secret
-
+from os import environ
+# from dotenv import load_dotenv
+# load_dotenv()
 
 # Returns a dictionary with the start time in isoformat as the key and
 # a list containing the start time as a datetime object, shift type as a string, and a boolean if the shift is canceled as the values
@@ -44,9 +45,9 @@ def add_event(shifts):
     for k, v in shifts.items():
         start_time = k
         end_time = v[0] + add_time(12)
-        summary = secret.summary
+        summary = environ.get('SUMMARY')
         desc = v[1]
-        location = secret.location
+        location = environ.get('LOCATION')
         create_event(start_time, end_time, summary, desc, location)
 
 
