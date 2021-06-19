@@ -1,4 +1,5 @@
 *.pyc
+.venv
 secret.py
 client_secret.json
 token.json
