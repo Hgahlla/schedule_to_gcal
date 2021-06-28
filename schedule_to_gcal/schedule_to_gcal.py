@@ -50,7 +50,7 @@ def add_event(shifts):
         create_event(start_time, end_time, summary, desc, location)
 
 
-def main():
+def main(event=None, context=None):
     shifts = get_shifts()
     remove_canceled = remove_canceled_events(shifts)
     add_event(remove_canceled)
