@@ -7,7 +7,6 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-import secret
 
 # Creates the Google Calendar Service
 def create_service(client_secret_file, api_name, api_version, *scopes):
@@ -67,7 +66,7 @@ def convert_to_rfc_datetime(year=1900, month=1, day=1, hour=0, minute=0):
 def convert_str_to_datetime(date):
     dt = datetime.datetime.strptime(date, '%Y-%m-%d')
     local_tz = pytz.timezone('America/Chicago')
-    local_dt = dt.astimezone(local_tz)
+    local_dt = local_tz.localize(dt)
     return local_dt
 
 
