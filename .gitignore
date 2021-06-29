@@ -6,3 +6,4 @@ token.json
 token_calendar_v3.pickle
 /tests
 /.vscode
+/gcal

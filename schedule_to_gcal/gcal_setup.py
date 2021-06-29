@@ -1,11 +1,12 @@
+import os
+from shutil import copyfile
+import subprocess
 import datetime
 import pytz
-import os
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-
 
 # Creates the Google Calendar Service
 def create_service(client_secret_file, api_name, api_version, *scopes):
@@ -13,13 +14,28 @@ def create_service(client_secret_file, api_name, api_version, *scopes):
     API_SERVICE_NAME = api_name
     API_VERSION = api_version
     SCOPES = [scope for scope in scopes[0]]
+    token_path = "token.json"
+
+    # Checks if the script is running on AWS Lambda
+    if os.name != 'nt':
+        # Set working dir to /tmp as lambda only has access to that
+        tmp_dir = os.path.join(os.path.sep, "tmp", "schedule-to-gcal")
+        token_path = os.path.join(tmp_dir, 'token.json')
+        try:
+            os.makedirs(tmp_dir)
+            subprocess.run(["chmod", "775", str(tmp_dir)])
+            copyfile('token.json', token_path)
+            print("Created Directory & Copied File")
+        except:
+            pass
+        os.chdir(tmp_dir)
 
     creds = None
 
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
 
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
@@ -30,7 +46,7 @@ def create_service(client_secret_file, api_name, api_version, *scopes):
             creds = flow.run_local_server(port=0)
 
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(token_path, 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -50,7 +66,7 @@ def convert_to_rfc_datetime(year=1900, month=1, day=1, hour=0, minute=0):
 def convert_str_to_datetime(date):
     dt = datetime.datetime.strptime(date, '%Y-%m-%d')
     local_tz = pytz.timezone('America/Chicago')
-    local_dt = dt.astimezone(local_tz)
+    local_dt = local_tz.localize(dt)
     return local_dt
 
 
