@@ -1,6 +1,6 @@
 # Schedule to GCal
 
-Schedule to GCal is a tool that retrieves an employee's work schedule from a HCA Healthcare facility and imports the schedule data to your Google Calendar using the Google Calendar API. Since this tool is deployed on AWS Lambda, the Google Calendar will automatically update if the employee's work schedule has been changed.
+Schedule to GCal is an automation tool that retrieves an employee's work schedule from a HCA Healthcare facility and imports the schedule data to your Google Calendar using the Google Calendar API. Since this tool is deployed on AWS Lambda, the Google Calendar will automatically update if the employee's work schedule has been changed.
 
 <img src="images/Work-Schedule-on-Google-Calendar.png" width=1500> 
 <img src="images/Work-Schedule.png" width=1500>
